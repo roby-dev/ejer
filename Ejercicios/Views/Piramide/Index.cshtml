@@ -1,0 +1,39 @@
+﻿@model Ejercicios.Models.Piramide
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+    <div>
+        @using (Html.BeginForm("Index", "Piramide", FormMethod.Post, new { id = "frm-piramide" })) {
+            <div class="form-group">
+                @Html.TextBoxFor(x => x.numero, new { @class = "form-control", placeholder = "Ingrese numero", type = "number" })
+            </div>
+        }
+
+        @if (Model != null) {
+            if (Model.resultado.Count == 0) {
+
+
+                <div class="alert alert-danger">
+                    Ingrese valores válidos(mayores a 0 y menor igual a 10)
+                </div>
+            } else {
+                <h2 style="text-align:center;">Resultado</h2>
+                foreach (string valor in Model.resultado) {
+                    <p style="text-align:center;">@valor</p>
+                }
+            }
+
+        }
+    </div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+    <div>
+        <form>
+            <label for="txtMin">Ingrese minutos (horas:minutos:segundos): </label>
+            <input type="text" id="txtMin" value="00:00:00" disabled="disabled" placeholder="00:00:00" />
+            <input type="checkbox" id="cbPausar" name="pausar" onchange="changeState(this)" />
+            <label for="cbPausar">Parar el tiempo en lo establecido</label>
+            <br />
+            <label for="rbTipo">Tipo de cronómetro: </label>
+            <input type="radio" name="rbTipo" value="ascendente" id="rbAscendente" />
+            <label for="rbAscendente">Ascendente</label>
+            <input type="radio" name="rbTipo" value="descentente" id="rbDescendente" />
+            <label for="rbDescendente">Descendente</label>
+            <br />
+            <label for="txtAdvertencia">Tiempo de advertencia (horas:minutos:segundos): </label>
+            <input type="text" id="txtAdvertencia" value="00:00:00" placeholder="00:00:00" />
+            <br />
+            <label for="rbTipo">Activar tiempo adicional: </label>
+            <input type="radio" name="rbAdicional" value="si" id="rbSi" />
+            <label for="rbSi">Si</label>
+            <input type="radio" name="rbAdicional" value="no" id="rbNo" />
+            <label for="rbNo">No</label>
+            <br />
+            <label for="txtAdicional">Tiempo adicional (horas:minutos:segundos): </label>
+            <input type="text" id="txtAdicional" value="00:00:00" placeholder="00:00:00" />
+
+        </form>
+        <button id="btnIniciar">Iniciar</button>
+    </div>
+
+    <script type="text/javascript">
+       
+        let btnIniciar = document.getElementById("btnIniciar");
+        let txtMin = document.getElementById("txtMin");
+        let cbPausar = document.getElementById("cbPausar");
+
+        function changeState(el){
+            if (el.checked) {
+                txtMin.removeAttribute("disabled");
+            }
+            else {
+                txtMin.setAttribute('disabled', '')
+            }
+        }
+
+        try {
+            btnIniciar.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (cbPausar.checked) {
+                    let minutosFormateados = txtMin.value.split(':');
+                    console.log(minutosFormateados);
+                    if (minutosFormateados.length > 3 || minutosFormateados <= 1) alert("Ingrese valores válidos");
+                }
+            })
+        } catch (e) {
+            alert(e);
+        }
+    </script>
+</body>
+</html>
