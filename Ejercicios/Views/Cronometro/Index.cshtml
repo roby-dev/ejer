@@ -15,57 +15,386 @@
         <form>
             <label for="txtMin">Ingrese minutos (horas:minutos:segundos): </label>
             <input type="text" id="txtMin" value="00:00:00" disabled="disabled" placeholder="00:00:00" />
-            <input type="checkbox" id="cbPausar" name="pausar" onchange="changeState(this)" />
-            <label for="cbPausar">Parar el tiempo en lo establecido</label>
+            <span id="container-parar" style="width:auto">
+                <input type="checkbox" id="cbPausar" name="pausar" onchange="changeState(this)" />
+                <label for="cbPausar">Parar el tiempo en lo establecido</label>
+            </span>
             <br />
             <label for="rbTipo">Tipo de cronómetro: </label>
-            <input type="radio" name="rbTipo" value="ascendente" id="rbAscendente" />
+            <input type="radio" name="rbTipo" value="ascendente" id="rbAscendente" onchange="handleTipo(this)" checked />
             <label for="rbAscendente">Ascendente</label>
-            <input type="radio" name="rbTipo" value="descentente" id="rbDescendente" />
+            <input type="radio" name="rbTipo" value="descendente" id="rbDescendente" onchange="handleTipo(this)" />
             <label for="rbDescendente">Descendente</label>
             <br />
             <label for="txtAdvertencia">Tiempo de advertencia (horas:minutos:segundos): </label>
             <input type="text" id="txtAdvertencia" value="00:00:00" placeholder="00:00:00" />
             <br />
             <label for="rbTipo">Activar tiempo adicional: </label>
-            <input type="radio" name="rbAdicional" value="si" id="rbSi" />
-            <label for="rbSi">Si</label>
-            <input type="radio" name="rbAdicional" value="no" id="rbNo" />
-            <label for="rbNo">No</label>
+            <input type="radio" name="rbAdicional" value="si" id="rbSi" onchange="handleChange(this)" /><label for="rbSi">Si</label>
+            <input type="radio" name="rbAdicional" value="no" id="rbNo" onchange="handleChange(this)" checked /><label for="rbNo">No</label>
             <br />
             <label for="txtAdicional">Tiempo adicional (horas:minutos:segundos): </label>
-            <input type="text" id="txtAdicional" value="00:00:00" placeholder="00:00:00" />
+            <input type="text" id="txtAdicional" value="00:00:00" placeholder="00:00:00" disabled />
 
         </form>
-        <button id="btnIniciar">Iniciar</button>
-    </div>
+        <div>
+            <button id="btnIniciar">Iniciar</button>
+            <button id="btnPausar" disabled>Pausar</button>
+            <button id="btnContinuar" disabled>Continuar</button>
+            <button id="btnReiniciar">Reiniciar</button>
+        </div>
+
+        <div>
+            <h4 style="text-align:center;">Tiempo Normal</h4>
+            <h1 style="text-align:center" id="cronometro">00:00:00</h1>
+        </div>
+
+        <div>
+            <h4 style="text-align:center;">Tiempo Adicional</h4>
+            <h2 style="text-align:center" id="cronometroAdicional">00:00:00</h2>
+        </div>
+
+        <div id="advertencia-container">
+
+        </div>
+        <div id="advertencia-container_2">
+
+        </div>
+    </div>    
 
     <script type="text/javascript">
-       
+
+        let containerParar = document.getElementById("container-parar");
         let btnIniciar = document.getElementById("btnIniciar");
+        let btnPausar = document.getElementById("btnPausar");
+        let btnContinuar = document.getElementById("btnContinuar");
+        let btnReiniciar = document.getElementById("btnReiniciar");
         let txtMin = document.getElementById("txtMin");
+        let txtAdvertencia = document.getElementById("txtAdvertencia");
+        let txtAdicional = document.getElementById("txtAdicional")
         let cbPausar = document.getElementById("cbPausar");
+        let tiempoNormal = document.getElementById("cronometro");
+        let tiempoAdicional = document.getElementById("cronometroAdicional");
+        let advertenciaContainer = document.getElementById("advertencia-container");
+        let advertenciaContainer_2 = document.getElementById("advertencia-container_2");
+        let rbSi = document.getElementById("rbSi");
+        let rbNo = document.getElementById("rbNo");
+        let minutosFormateados,minutosFormateados_2;
+
+        let iniciar = false;
+
+        let t,t_2;
+        let sec = 0, min = 0, hrs = 0;
+        let sec_2 = 0, min_2 = 0, hrs_2 = 0;
+
+        function validarFormato() {
+            minutosFormateados = txtMin.value.split(':');            
+            return (minutosFormateados.length!=3);
+        }
+
+        function validarFormato_2() {
+            minutosFormateados_2 = txtAdicional.value.split(':');
+            console.log(minutosFormateados_2);
+            return (minutosFormateados_2.length != 3);
+        }
 
         function changeState(el){
             if (el.checked) {
                 txtMin.removeAttribute("disabled");
+                return;
+            }            
+            txtMin.setAttribute('disabled', '');
+        }
+
+        function handleTipo(el) {
+            if (el.value == "descendente") {
+                containerParar.style.display = 'none';
+                txtMin.removeAttribute('disabled');
+                return;
             }
-            else {
-                txtMin.setAttribute('disabled', '')
+            txtMin.setAttribute('disabled', '');
+            containerParar.style.display = 'inline';
+        }
+
+        function handleChange(el) {
+            if (el.value == "si") {
+                txtAdicional.removeAttribute("disabled");
+                return;
             }
+            txtAdicional.setAttribute("disabled", "");            
         }
 
         try {
             btnIniciar.addEventListener('click', (e) => {
                 e.preventDefault();
-                if (cbPausar.checked) {
-                    let minutosFormateados = txtMin.value.split(':');
-                    console.log(minutosFormateados);
-                    if (minutosFormateados.length > 3 || minutosFormateados <= 1) alert("Ingrese valores válidos");
+                if (txtAdvertencia.value.split(':').length != 3) {
+                    alert("Ingrese formato válido \"00:00:00\"");
+                    return;
                 }
+              
+                if (rbAscendente.checked) {
+                    resetTimer();
+                    resetAddedTimer();
+                    if (cbPausar.checked) {
+                        if (validarFormato()) {
+                            alert("Ingrese formato válido \"00:00:00\"");
+                            return;
+                        }                        
+                    }
+                    if (rbSi.checked) {
+                        if (validarFormato_2()) alert("Ingrese formato válido \"00:00:00\"");
+                        return;
+                    }
+                    setButtonAttr(false, true, true, true);
+                    temporizador();
+                }
+                if (rbDescendente.checked) {
+                    if (validarFormato() || txtMin.value=="00:00:00") {
+                        alert("Ingrese formato válido \"00:00:00\"");
+                        return;
+                    }
+                    setButtonAttr(false, true, true, true);
+                    sec = Number(minutosFormateados[2]);
+                    min = Number(minutosFormateados[1]);
+                    hrs = Number(minutosFormateados[0]);
+                    tiempoNormal.textContent = txtMin.value;
+                    temporizadorDesc();
+
+                    if (rbSi.checked) {
+                        tiempoAdicional.textContent = txtAdicional.value;
+                        if (validarFormato_2()) {
+                            alert("Ingrese formato válido \"00:00:00\"");
+                            return;
+                        }
+                        sec_2 = Number(minutosFormateados_2[2]);
+                        min_2 = Number(minutosFormateados_2[1]);
+                        hrs_2 = Number(minutosFormateados_2[0]);
+                    }
+
+                }                
+            });
+
+            btnPausar.addEventListener('click', (e) => {
+                e.preventDefault();
+                setButtonAttr(true, false, true, true);
+                if (rbAscendente.checked) {
+                    if (tiempoNormal.textContent == txtMin.value) {
+                        clearTimeout(t_2);
+                    } else {
+                        clearTimeout(t);
+                    }
+                } else {
+                    if (tiempoNormal.textContent == "00:00:00") clearTimeout(t_2);
+                    else clearTimeout(t);
+                }
+                    
+            });
+
+            btnContinuar.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (rbAscendente.checked) {
+                    if (tiempoNormal.textContent == txtMin.value) temporizador_2();
+                    else temporizador();
+                }
+                if (rbDescendente.checked) {
+                    if (tiempoNormal.textContent == "00:00:00") temporizadorDesc_2();
+                    else temporizadorDesc();
+                }
+                setButtonAttr(true, true, false, true);
+            });
+
+            btnReiniciar.addEventListener('click', (e) => {
+                e.preventDefault();
+                setButtonAttr(true, true, true, false);
             })
         } catch (e) {
-            alert(e);
+            alert("Ingrese valores validos");
+        }
+
+        function setButtonAttr(_iniciar, _pausar, _continuar, _reiniciar) {
+            if (!_iniciar) {
+                btnIniciar.setAttribute('disabled', '');
+                btnPausar.removeAttribute('disabled');
+                btnReiniciar.removeAttribute('disabled');
+            }
+            if (!_pausar) {
+                btnPausar.setAttribute('disabled', '');
+                btnContinuar.removeAttribute('disabled');
+            }
+            if (!_continuar) {
+                btnContinuar.setAttribute('disabled', '');
+                btnPausar.removeAttribute('disabled');
+            }
+            if (!_reiniciar) {
+                btnPausar.setAttribute('disabled', '');
+                btnContinuar.setAttribute('disabled', '');                
+                btnIniciar.removeAttribute('disabled');
+                resetTimer();
+                resetAddedTimer();
+                clearTimeout(t);
+                clearTimeout(t_2);
+                txtMin.value = "00:00:00";
+                txtAdicional.value = "00:00:00";
+                txtAdvertencia.value = "00:00:00";
+                advertenciaContainer.innerHTML = "";
+                advertenciaContainer_2.innerHTML = "";
+            }
+        }
+
+        function contador() {
+            sec++;
+            if (sec >= 60) {
+                sec = 0;
+                min++;
+                if (min >= 60) {
+                    min = 0;
+                    hour++;
+                }
+            }
+        }
+
+        function contador_2() {
+            sec_2++;
+            if (sec_2 >= 60) {
+                sec_2 = 0;
+                min_2++;
+                if (min_2 >= 60) {
+                    min_2 = 0;
+                    hour_2++;
+                }
+            }
+        }
+
+        function contadorDesc() {    
+            if (sec ==0) {
+                sec = 60;                
+                min--;
+                if (min == 0 && hrs>=1) {
+                    min = 60;
+                    hrs--;
+                }
+            }
+            sec--;
+            console.log(tiempoNormal.textContent);            
+        }
+
+        function contadorDesc_2() {
+            if (sec_2 == 0) {
+                sec_2 = 60;
+                min_2--;
+                if (min_2 == 0 && hrs_2 >= 1) {
+                    min_2 = 60;
+                    hrs_2--;
+                }
+            }
+            sec_2--;            
+        }
+
+        function resetTimer() {
+            tiempoNormal.textContent = "00:00:00";
+            sec = 0;
+            min = 0;
+            hrs = 0;
+        }
+
+        function resetAddedTimer() {
+            tiempoAdicional.textContent = "00:00:00";
+            sec_2 = 0;
+            min_2 = 0;
+            hrs_2 = 0;
+        }
+
+        function agregar() {
+            contador();
+            tiempoNormal.textContent = (hrs > 9 ? hrs : "0" + hrs)
+                + ":" + (min > 9 ? min : "0" + min)
+                + ":" + (sec > 9 ? sec : "0" + sec);
+            if (cbPausar.checked) {                
+                if (tiempoNormal.textContent == txtMin.value) {                    
+                    clearTimeout(t);
+                    if (rbSi.checked && txtAdicional.value != "00:00:00") {
+                        temporizador_2();
+                    } else {
+                        btnPausar.setAttribute('disabled', '');
+                    }                    
+                    return;
+                }
+            }
+
+            if (tiempoNormal.textContent == txtAdvertencia.value) {             
+                mostrarAdvertencia();                
+            }
+            temporizador();
+        }
+
+        function disminuir() {
+            contadorDesc();
+            tiempoNormal.textContent = (hrs > 9 ? hrs : "0" + hrs)
+                + ":" + (min > 9 ? min : "0" + min)
+                + ":" + (sec > 9 ? sec : "0" + sec);
+
+            if (tiempoNormal.textContent == "00:00:00") {
+                clearTimeout(t);
+                if (rbSi.checked && txtAdicional.value != "00:00:00") temporizadorDesc_2();
+                else btnPausar.setAttribute('disabled', '');
+                return;
+            }
+
+            if (tiempoNormal.textContent == txtAdvertencia.value) {
+                mostrarAdvertencia();
+            }
+            temporizadorDesc();
+        }
+
+        function disminuir_2() {
+            contadorDesc_2();
+            tiempoAdicional.textContent = (hrs_2 > 9 ? hrs_2 : "0" + hrs_2)
+                + ":" + (min_2 > 9 ? min_2 : "0" + min_2)
+                + ":" + (sec_2 > 9 ? sec_2 : "0" + sec_2);
+            if (tiempoAdicional.textContent == "00:00:00") {
+                mostrarAdvertencia_2();
+                btnPausar.setAttribute('disabled', 'disabled');
+                clearTimeout(t_2);
+                return;
+            }
+            temporizadorDesc_2();
+        }
+
+        function agregar_2() {
+            contador_2();
+            tiempoAdicional.textContent = (hrs_2 > 9 ? hrs_2 : "0" + hrs_2)
+                + ":" + (min_2 > 9 ? min_2 : "0" + min_2)
+                + ":" + (sec_2 > 9 ? sec_2 : "0" + sec_2);
+            if (tiempoAdicional.textContent == txtAdicional.value) {               
+                mostrarAdvertencia_2();
+                btnPausar.setAttribute('disabled', 'disabled');
+                return;
+            }
+            temporizador_2();
+        }
+
+        function temporizador() {
+            t = setTimeout(agregar, 1000);
+        }
+
+        function temporizadorDesc() {
+            t = setTimeout(disminuir, 1000);
+        }
+
+        function temporizadorDesc_2() {
+            t_2 = setTimeout(disminuir_2, 1000);
+        }
+
+        function temporizador_2() {
+            t_2 = setTimeout(agregar_2, 1000);
+        }
+
+        function mostrarAdvertencia() {
+            advertenciaContainer.innerText = "TIEMPO DE ADVERTENCIA ALCANZADO!!!";
+        }
+
+        function mostrarAdvertencia_2() {
+            advertenciaContainer_2.innerText = "TIEMPO ADICIONAL ALCANZADO!!!";
         }
     </script>
 </body>

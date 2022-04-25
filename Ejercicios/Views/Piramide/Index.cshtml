@@ -16,6 +16,7 @@
         @using (Html.BeginForm("Index", "Piramide", FormMethod.Post, new { id = "frm-piramide" })) {
             <div class="form-group">
                 @Html.TextBoxFor(x => x.numero, new { @class = "form-control", placeholder = "Ingrese numero", type = "number" })
+                <input type="submit" value="Visualizar" />
             </div>
         }
 
