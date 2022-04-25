@@ -267,12 +267,12 @@
 
         function contadorDesc() {    
             if (sec ==0) {
-                sec = 60;                
-                min--;
+                sec = 60;      
                 if (min == 0 && hrs>=1) {
                     min = 60;
                     hrs--;
                 }
+                min--;
             }
             sec--;
             console.log(tiempoNormal.textContent);            
@@ -280,12 +280,12 @@
 
         function contadorDesc_2() {
             if (sec_2 == 0) {
-                sec_2 = 60;
-                min_2--;
+                sec_2 = 60;                
                 if (min_2 == 0 && hrs_2 >= 1) {
                     min_2 = 60;
                     hrs_2--;
                 }
+                min_2--;
             }
             sec_2--;            
         }
